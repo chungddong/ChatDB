@@ -3,10 +3,12 @@ package com.chatdb.controller;
 import com.chatdb.dto.LoginRequest;
 import com.chatdb.entity.User;
 import com.chatdb.service.UserService;
+import com.chatdb.util.JwtUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -23,9 +25,13 @@ import java.util.Optional;
 public class AuthController {
     
     private final UserService userService;
-    
-    public AuthController(UserService userService) {
+    private final JwtUtil jwtUtil;
+    private final PasswordEncoder passwordEncoder;
+
+    public AuthController(UserService userService, JwtUtil jwtUtil, PasswordEncoder passwordEncoder) {
         this.userService = userService;
+        this.jwtUtil = jwtUtil;
+        this.passwordEncoder = passwordEncoder;
     }
     
     /**
@@ -52,7 +58,10 @@ public class AuthController {
                 response.put("message", "이미 존재하는 사용자명입니다.");
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
             }
-            
+
+            // 비밀번호 암호화
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+
             // 사용자 저장
             User savedUser = userService.save(user);
             
@@ -101,25 +110,29 @@ public class AuthController {
             }
             
             User user = userOptional.get();
-            
-            // 비밀번호 확인 (실제로는 암호화된 비밀번호 비교 필요)
-            if (!user.getPassword().equals(password)) {
+
+            // 비밀번호 확인 (암호화된 비밀번호 비교)
+            if (!passwordEncoder.matches(password, user.getPassword())) {
                 response.put("success", false);
                 response.put("message", "비밀번호가 일치하지 않습니다.");
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
             }
-            
-            // 로그인 성공 - 비밀번호 제외한 사용자 정보 반환
+
+            // JWT 토큰 생성
+            String token = jwtUtil.generateToken(user.getId(), user.getEmail());
+
+            // 로그인 성공 - 비밀번호 제외한 사용자 정보 + JWT 토큰 반환
             Map<String, Object> userData = new HashMap<>();
             userData.put("id", user.getId());
             userData.put("email", user.getEmail());
             userData.put("username", user.getUsername());
             userData.put("profileImage", user.getProfileImage());
             userData.put("createdAt", user.getCreatedAt());
-            
+
             response.put("success", true);
             response.put("message", "로그인에 성공했습니다.");
             response.put("user", userData);
+            response.put("token", token);
             
             return ResponseEntity.ok(response);
             
