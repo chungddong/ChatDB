@@ -15,8 +15,9 @@ public class OpenApiConfig {
 
     @Bean
     public OpenAPI customOpenAPI() {
-        // API 키 보안 요구사항 (모든 API에 적용)
+        // API 키와 JWT 보안 요구사항
         SecurityRequirement apiKeyRequirement = new SecurityRequirement().addList("apiKey");
+        SecurityRequirement jwtRequirement = new SecurityRequirement().addList("bearerAuth");
 
         return new OpenAPI()
                 .components(new Components()
@@ -34,7 +35,7 @@ public class OpenApiConfig {
                                         .in(SecurityScheme.In.HEADER)
                                         .name("X-API-Key")
                                         .description("API 키를 입력하세요 (application.properties에 설정된 api.key 값)")))
-                // 전역 보안 요구사항 적용
+                // 전역 보안 요구사항 적용 (API 키를 모든 엔드포인트에 적용)
                 .addSecurityItem(apiKeyRequirement)
                 .info(new Info()
                         .title("ChatDB API")
