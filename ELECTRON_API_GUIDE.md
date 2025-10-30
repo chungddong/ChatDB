@@ -149,14 +149,14 @@ const result = await login('user@example.com', 'password123');
 
 **요청**
 ```javascript
-async function sendFriendRequest(friendUserId) {
+async function sendFriendRequest(friendEmail) {
   const token = localStorage.getItem('jwt_token');
 
   const response = await fetch(`${BASE_URL}/api/friends/request`, {
     method: 'POST',
     headers: authHeaders(token),
     body: JSON.stringify({
-      friendUserId: friendUserId
+      friendEmail: friendEmail
     })
   });
 
@@ -166,15 +166,23 @@ async function sendFriendRequest(friendUserId) {
 
 **요청 예시**
 ```javascript
-const result = await sendFriendRequest(2);
+const result = await sendFriendRequest('friend@example.com');
 ```
 
-**응답 예시**
+**응답 예시 (성공)**
 ```json
 {
   "success": true,
   "message": "친구 요청을 보냈습니다.",
   "requestId": 1
+}
+```
+
+**응답 예시 (실패)**
+```json
+{
+  "success": false,
+  "message": "해당 이메일의 사용자를 찾을 수 없습니다."
 }
 ```
 
@@ -720,12 +728,12 @@ class ChatDBAPI {
   }
 
   // 친구 관리
-  static async sendFriendRequest(friendUserId) {
+  static async sendFriendRequest(friendEmail) {
     const token = this.getToken();
     const response = await fetch(`${BASE_URL}/api/friends/request`, {
       method: 'POST',
       headers: authHeaders(token),
-      body: JSON.stringify({ friendUserId })
+      body: JSON.stringify({ friendEmail })
     });
     return await response.json();
   }

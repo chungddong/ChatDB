@@ -28,26 +28,28 @@ public class FriendshipService {
     }
 
     /**
-     * 친구 요청 보내기
+     * 친구 요청 보내기 (이메일로)
      * @param userId 요청을 보내는 사용자 ID
-     * @param friendUserId 요청을 받을 사용자 ID
+     * @param friendEmail 요청을 받을 사용자 이메일
      * @return 생성된 친구 관계
      */
     @Transactional
-    public Friendship sendFriendRequest(Long userId, Long friendUserId) {
-        // 자기 자신에게 요청하는 경우
-        if (userId.equals(friendUserId)) {
-            throw new IllegalArgumentException("자기 자신에게 친구 요청을 보낼 수 없습니다.");
-        }
-
+    public Friendship sendFriendRequest(Long userId, String friendEmail) {
         // 사용자 조회
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-        User friendUser = userRepository.findById(friendUserId)
-                .orElseThrow(() -> new IllegalArgumentException("친구 요청을 받을 사용자를 찾을 수 없습니다."));
+
+        // 이메일로 친구 사용자 조회
+        User friendUser = userRepository.findByEmail(friendEmail)
+                .orElseThrow(() -> new IllegalArgumentException("해당 이메일의 사용자를 찾을 수 없습니다."));
+
+        // 자기 자신에게 요청하는 경우
+        if (userId.equals(friendUser.getId())) {
+            throw new IllegalArgumentException("자기 자신에게 친구 요청을 보낼 수 없습니다.");
+        }
 
         // 이미 친구 관계가 존재하는지 확인 (양방향)
-        if (friendshipRepository.existsFriendship(userId, friendUserId)) {
+        if (friendshipRepository.existsFriendship(userId, friendUser.getId())) {
             throw new IllegalArgumentException("이미 친구 요청이 존재하거나 친구 관계입니다.");
         }
 

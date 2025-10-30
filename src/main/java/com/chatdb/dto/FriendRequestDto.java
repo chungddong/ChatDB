@@ -6,25 +6,25 @@ package com.chatdb.dto;
  */
 public class FriendRequestDto {
 
-    /** 친구 요청을 받을 사용자 ID */
-    private Long friendUserId;
+    /** 친구 요청을 받을 사용자 이메일 */
+    private String friendEmail;
 
     // ===== 생성자 =====
 
     public FriendRequestDto() {
     }
 
-    public FriendRequestDto(Long friendUserId) {
-        this.friendUserId = friendUserId;
+    public FriendRequestDto(String friendEmail) {
+        this.friendEmail = friendEmail;
     }
 
     // ===== Getter/Setter =====
 
-    public Long getFriendUserId() {
-        return friendUserId;
+    public String getFriendEmail() {
+        return friendEmail;
     }
 
-    public void setFriendUserId(Long friendUserId) {
-        this.friendUserId = friendUserId;
+    public void setFriendEmail(String friendEmail) {
+        this.friendEmail = friendEmail;
     }
 }

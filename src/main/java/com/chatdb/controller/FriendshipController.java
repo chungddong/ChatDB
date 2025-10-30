@@ -35,11 +35,11 @@ public class FriendshipController {
     /**
      * 친구 요청 보내기
      * @param authentication 인증 정보 (JWT에서 자동으로 추출된 사용자 ID)
-     * @param requestDto 친구 요청 정보 (친구 사용자 ID)
+     * @param requestDto 친구 요청 정보 (친구 사용자 이메일)
      * @return 친구 요청 결과
      */
     @PostMapping("/request")
-    @Operation(summary = "친구 요청 보내기", description = "특정 사용자에게 친구 요청을 보냅니다.")
+    @Operation(summary = "친구 요청 보내기", description = "특정 사용자의 이메일로 친구 요청을 보냅니다.")
     public ResponseEntity<Map<String, Object>> sendFriendRequest(
             Authentication authentication,
             @RequestBody FriendRequestDto requestDto) {
@@ -47,7 +47,7 @@ public class FriendshipController {
         Map<String, Object> response = new HashMap<>();
 
         try {
-            Friendship friendship = friendshipService.sendFriendRequest(userId, requestDto.getFriendUserId());
+            Friendship friendship = friendshipService.sendFriendRequest(userId, requestDto.getFriendEmail());
 
             response.put("success", true);
             response.put("message", "친구 요청을 보냈습니다.");
