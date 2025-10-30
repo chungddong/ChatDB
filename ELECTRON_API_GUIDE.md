@@ -211,13 +211,14 @@ async function getReceivedFriendRequests() {
   "message": "받은 친구 요청 목록을 조회했습니다.",
   "requests": [
     {
-      "friendshipId": 1,
+      "id": 1,
       "userId": 2,
       "username": "friend1",
       "email": "friend1@example.com",
       "profileImage": null,
       "status": "PENDING",
-      "createdAt": "2025-10-30T12:00:00"
+      "createdAt": "2025-10-30T12:00:00",
+      "updatedAt": "2025-10-30T12:00:00"
     }
   ],
   "count": 1
@@ -249,13 +250,14 @@ async function getSentFriendRequests() {
   "message": "보낸 친구 요청 목록을 조회했습니다.",
   "requests": [
     {
-      "friendshipId": 2,
+      "id": 2,
       "userId": 3,
       "username": "friend2",
       "email": "friend2@example.com",
       "profileImage": null,
       "status": "PENDING",
-      "createdAt": "2025-10-30T13:00:00"
+      "createdAt": "2025-10-30T13:00:00",
+      "updatedAt": "2025-10-30T13:00:00"
     }
   ],
   "count": 1
@@ -371,22 +373,24 @@ async function getFriendList() {
   "message": "친구 목록을 조회했습니다.",
   "friends": [
     {
-      "friendshipId": 1,
+      "id": 1,
       "userId": 2,
       "username": "friend1",
       "email": "friend1@example.com",
       "profileImage": null,
       "status": "ACCEPTED",
-      "createdAt": "2025-10-30T12:00:00"
+      "createdAt": "2025-10-30T12:00:00",
+      "updatedAt": "2025-10-30T12:00:00"
     },
     {
-      "friendshipId": 3,
+      "id": 3,
       "userId": 4,
       "username": "friend2",
       "email": "friend2@example.com",
       "profileImage": "https://example.com/profile.jpg",
       "status": "ACCEPTED",
-      "createdAt": "2025-10-30T14:00:00"
+      "createdAt": "2025-10-30T14:00:00",
+      "updatedAt": "2025-10-30T14:00:00"
     }
   ],
   "count": 2
