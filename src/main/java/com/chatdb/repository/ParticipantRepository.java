@@ -29,6 +29,11 @@ public interface ParticipantRepository extends JpaRepository<Participant, Long> 
      * 특정 채팅방에 특정 사용자가 참가 중인지 확인
      */
     Optional<Participant> findByChatRoomAndUser(ChatRoom chatRoom, User user);
+    
+    /**
+     * 특정 채팅방에 특정 사용자가 참가 중인지 여부
+     */
+    boolean existsByChatRoomAndUser(ChatRoom chatRoom, User user);
 
     /**
      * 특정 사용자가 참가 중인 모든 채팅방 조회
