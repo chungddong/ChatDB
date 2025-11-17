@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatDB - 채팅 애플리케이션</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- WebSocket 라이브러리 -->
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+</head>
+<body>
+    <!-- 로그인 화면 -->
+    <div id="loginScreen" class="screen active">
+        <div class="login-container">
+            <h1>ChatDB</h1>
+            <div class="login-box">
+                <div class="tab-buttons">
+                    <button class="tab-btn active" onclick="showLoginForm()">로그인</button>
+                    <button class="tab-btn" onclick="showRegisterForm()">회원가입</button>
+                </div>
+
+                <!-- 로그인 폼 -->
+                <form id="loginForm" class="auth-form active">
+                    <div class="form-group">
+                        <label for="loginEmail">이메일</label>
+                        <input type="email" id="loginEmail" placeholder="example@email.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword">비밀번호</label>
+                        <input type="password" id="loginPassword" placeholder="비밀번호를 입력하세요" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">로그인</button>
+                </form>
+
+                <!-- 회원가입 폼 -->
+                <form id="registerForm" class="auth-form">
+                    <div class="form-group">
+                        <label for="registerEmail">이메일</label>
+                        <input type="email" id="registerEmail" placeholder="example@email.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerUsername">사용자명</label>
+                        <input type="text" id="registerUsername" placeholder="사용자명을 입력하세요" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerPassword">비밀번호</label>
+                        <input type="password" id="registerPassword" placeholder="비밀번호를 입력하세요" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerProfileImage">프로필 이미지 URL (선택)</label>
+                        <input type="text" id="registerProfileImage" placeholder="https://example.com/profile.jpg">
+                    </div>
+                    <button type="submit" class="btn btn-primary">회원가입</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 메인 채팅 화면 -->
+    <div id="chatScreen" class="screen">
+        <div class="chat-container">
+            <!-- 사이드바 -->
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <div class="user-info">
+                        <img id="userProfileImg" src="https://via.placeholder.com/40" alt="프로필" class="profile-img">
+                        <div class="user-details">
+                            <span id="userName" class="username">사용자</span>
+                            <span id="userEmail" class="email">email@example.com</span>
+                        </div>
+                    </div>
+                    <button class="btn-icon" onclick="logout()" title="로그아웃">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="sidebar-tabs">
+                    <button class="tab-btn active" onclick="showChatRooms()">채팅방</button>
+                    <button class="tab-btn" onclick="showFriends()">친구</button>
+                    <button class="tab-btn" onclick="showFriendRequests()">친구요청</button>
+                </div>
+
+                <!-- 채팅방 목록 -->
+                <div id="chatRoomList" class="sidebar-content active">
+                    <div class="list-header">
+                        <h3>채팅방</h3>
+                        <button class="btn-icon" onclick="showCreateChatRoomModal()" title="채팅방 생성">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <line x1="12" y1="5" x2="12" y2="19"/>
+                                <line x1="5" y1="12" x2="19" y2="12"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="chatRoomItems" class="list-items">
+                        <!-- 채팅방 목록이 여기에 동적으로 추가됩니다 -->
+                    </div>
+                </div>
+
+                <!-- 친구 목록 -->
+                <div id="friendList" class="sidebar-content">
+                    <div class="list-header">
+                        <h3>친구</h3>
+                        <button class="btn-icon" onclick="showAddFriendModal()" title="친구 추가">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <line x1="12" y1="5" x2="12" y2="19"/>
+                                <line x1="5" y1="12" x2="19" y2="12"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="friendItems" class="list-items">
+                        <!-- 친구 목록이 여기에 동적으로 추가됩니다 -->
+                    </div>
+                </div>
+
+                <!-- 친구 요청 목록 -->
+                <div id="friendRequestList" class="sidebar-content">
+                    <div class="list-header">
+                        <h3>친구 요청</h3>
+                    </div>
+                    <div class="request-tabs">
+                        <button class="request-tab active" onclick="showReceivedRequests()">받은 요청</button>
+                        <button class="request-tab" onclick="showSentRequests()">보낸 요청</button>
+                    </div>
+                    <div id="receivedRequestItems" class="list-items active">
+                        <!-- 받은 친구 요청이 여기에 동적으로 추가됩니다 -->
+                    </div>
+                    <div id="sentRequestItems" class="list-items">
+                        <!-- 보낸 친구 요청이 여기에 동적으로 추가됩니다 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 채팅 영역 -->
+            <div class="chat-area">
+                <div id="noChatSelected" class="no-chat-selected">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+                    </svg>
+                    <p>채팅방을 선택하세요</p>
+                </div>
+
+                <div id="chatContent" class="chat-content" style="display: none;">
+                    <!-- 채팅 헤더 -->
+                    <div class="chat-header">
+                        <div class="chat-info">
+                            <h2 id="chatRoomName">채팅방</h2>
+                            <span id="chatRoomParticipants" class="participants">0명</span>
+                        </div>
+                        <div class="chat-actions">
+                            <button class="btn-icon" onclick="showParticipantsModal()" title="참가자 보기">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+                                    <circle cx="9" cy="7" r="4"/>
+                                    <path d="M23 21v-2a4 4 0 00-3-3.87"/>
+                                    <path d="M16 3.13a4 4 0 010 7.75"/>
+                                </svg>
+                            </button>
+                            <button class="btn-icon" onclick="confirmDeleteChatRoom()" title="채팅방 나가기">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <polyline points="3 6 5 6 21 6"/>
+                                    <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 메시지 영역 -->
+                    <div id="messageArea" class="message-area">
+                        <!-- 메시지들이 여기에 동적으로 추가됩니다 -->
+                    </div>
+
+                    <!-- 메시지 입력 영역 -->
+                    <div class="message-input-area">
+                        <form id="messageForm" class="message-form">
+                            <input type="text" id="messageInput" placeholder="메시지를 입력하세요..." autocomplete="off">
+                            <button type="submit" class="btn btn-send">전송</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 모달들 -->
+    <!-- 친구 추가 모달 -->
+    <div id="addFriendModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>친구 추가</h3>
+                <button class="btn-close" onclick="closeModal('addFriendModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="addFriendForm">
+                    <div class="form-group">
+                        <label for="friendEmail">친구 이메일</label>
+                        <input type="email" id="friendEmail" placeholder="friend@example.com" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">친구 요청 보내기</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 채팅방 생성 모달 -->
+    <div id="createChatRoomModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>채팅방 생성</h3>
+                <button class="btn-close" onclick="closeModal('createChatRoomModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="createChatRoomForm">
+                    <div class="form-group">
+                        <label for="chatRoomName">채팅방 이름</label>
+                        <input type="text" id="newChatRoomName" placeholder="채팅방 이름을 입력하세요" required>
+                    </div>
+                    <div class="form-group">
+                        <label>참가자 선택</label>
+                        <div id="friendCheckboxList" class="checkbox-list">
+                            <!-- 친구 목록이 체크박스로 표시됩니다 -->
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">채팅방 생성</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 참가자 목록 모달 -->
+    <div id="participantsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>참가자</h3>
+                <button class="btn-close" onclick="closeModal('participantsModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="participantsList" class="participants-list">
+                    <!-- 참가자 목록이 여기에 표시됩니다 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 메시지 편집 모달 -->
+    <div id="editMessageModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>메시지 수정</h3>
+                <button class="btn-close" onclick="closeModal('editMessageModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="editMessageForm">
+                    <div class="form-group">
+                        <label for="editMessageContent">메시지 내용</label>
+                        <textarea id="editMessageContent" rows="3" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">수정</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
