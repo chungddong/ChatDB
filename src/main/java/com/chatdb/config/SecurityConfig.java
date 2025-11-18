@@ -59,7 +59,12 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // 인증 없이 접근 가능한 경로
                         .requestMatchers(
+                                "/",                      // 메인 페이지
+                                "/index.html",            // 메인 페이지
+                                "/css/**",                // CSS 파일
+                                "/js/**",                 // JavaScript 파일
                                 "/api/auth/**",           // 회원가입, 로그인
+                                "/ws/**",                 // WebSocket
                                 "/swagger-ui/**",         // Swagger UI
                                 "/v3/api-docs/**",        // Swagger API Docs
                                 "/api-docs/**"            // Swagger API Docs

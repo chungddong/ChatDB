@@ -16,8 +16,8 @@
             <h1>ChatDB</h1>
             <div class="login-box">
                 <div class="tab-buttons">
-                    <button class="tab-btn active" onclick="showLoginForm()">로그인</button>
-                    <button class="tab-btn" onclick="showRegisterForm()">회원가입</button>
+                    <button class="tab-btn active" onclick="showLoginForm(event)">로그인</button>
+                    <button class="tab-btn" onclick="showRegisterForm(event)">회원가입</button>
                 </div>
 
                 <!-- 로그인 폼 -->
@@ -64,7 +64,7 @@
             <div class="sidebar">
                 <div class="sidebar-header">
                     <div class="user-info">
-                        <img id="userProfileImg" src="https://via.placeholder.com/40" alt="프로필" class="profile-img">
+                        <img id="userProfileImg" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHJ4PSI0IiBmaWxsPSIjZTJlOGYwIi8+PHBhdGggZD0iTTIwIDIwYzIuNzYgMCA1LTIuMjQgNS01cy0yLjI0LTUtNS01LTUgMi4yNC01IDUgMi4yNCA1IDUgNXptMCAyYy0zLjMzIDAtMTAgMS42Ny0xMCA1djJoMjB2LTJjMC0zLjMzLTYuNjctNS0xMC01eiIgZmlsbD0iIzk0YTNiOCIvPjwvc3ZnPg==" alt="프로필" class="profile-img">
                         <div class="user-details">
                             <span id="userName" class="username">사용자</span>
                             <span id="userEmail" class="email">email@example.com</span>
@@ -78,9 +78,9 @@
                 </div>
 
                 <div class="sidebar-tabs">
-                    <button class="tab-btn active" onclick="showChatRooms()">채팅방</button>
-                    <button class="tab-btn" onclick="showFriends()">친구</button>
-                    <button class="tab-btn" onclick="showFriendRequests()">친구요청</button>
+                    <button class="tab-btn active" onclick="showChatRooms(event)">채팅방</button>
+                    <button class="tab-btn" onclick="showFriends(event)">친구</button>
+                    <button class="tab-btn" onclick="showFriendRequests(event)">친구요청</button>
                 </div>
 
                 <!-- 채팅방 목록 -->
@@ -121,8 +121,8 @@
                         <h3>친구 요청</h3>
                     </div>
                     <div class="request-tabs">
-                        <button class="request-tab active" onclick="showReceivedRequests()">받은 요청</button>
-                        <button class="request-tab" onclick="showSentRequests()">보낸 요청</button>
+                        <button class="request-tab active" onclick="showReceivedRequests(event)">받은 요청</button>
+                        <button class="request-tab" onclick="showSentRequests(event)">보낸 요청</button>
                     </div>
                     <div id="receivedRequestItems" class="list-items active">
                         <!-- 받은 친구 요청이 여기에 동적으로 추가됩니다 -->

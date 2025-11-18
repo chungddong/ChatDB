@@ -76,6 +76,30 @@ public class ChatRoomService {
     }
 
     /**
+     * 특정 사용자가 참여한 채팅방 조회
+     */
+    @Transactional(readOnly = true)
+    public List<ChatRoomResponse> getChatRoomsByUserId(Long userId) {
+        Optional<User> userOptional = userRepository.findById(userId);
+        if (userOptional.isEmpty()) {
+            return List.of();
+        }
+
+        User user = userOptional.get();
+        // 사용자가 참여한 모든 참가자 레코드 조회
+        List<Participant> participants = participantRepository.findByUser(user);
+
+        // 참가자 레코드에서 채팅방 추출 및 변환
+        return participants.stream()
+                .map(participant -> {
+                    ChatRoom chatRoom = participant.getChatRoom();
+                    Integer participantCount = participantRepository.countByChatRoom(chatRoom);
+                    return ChatRoomResponse.from(chatRoom, participantCount);
+                })
+                .collect(Collectors.toList());
+    }
+
+    /**
      * 특정 채팅방 조회
      */
     @Transactional(readOnly = true)

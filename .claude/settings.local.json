@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(mvn:*)",
-      "Bash(timeout:*)"
+      "Bash(timeout:*)",
+      "Bash(./mvnw.cmd spring-boot:run:*)"
     ],
     "deny": [],
     "ask": []

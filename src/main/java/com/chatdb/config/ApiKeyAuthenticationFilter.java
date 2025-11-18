@@ -35,8 +35,14 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
 
         String path = request.getRequestURI();
 
-        // Swagger UI 관련 경로는 API 키 검증 제외
-        if (path.startsWith("/swagger-ui") ||
+        // API 키 검증 제외 경로
+        if (path.equals("/") ||
+            path.equals("/index.html") ||
+            path.startsWith("/css/") ||
+            path.startsWith("/js/") ||
+            path.startsWith("/ws/") ||
+            path.startsWith("/api/auth/") ||
+            path.startsWith("/swagger-ui") ||
             path.startsWith("/v3/api-docs") ||
             path.startsWith("/api-docs")) {
             filterChain.doFilter(request, response);

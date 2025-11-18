@@ -73,16 +73,18 @@ public class ChatRoomController {
     }
 
     /**
-     * 모든 채팅방 조회
-     * @return 전체 채팅방 목록
+     * 내가 참여한 채팅방 조회
+     * @return 내가 참여한 채팅방 목록
      */
     @GetMapping
-    @Operation(summary = "모든 채팅방 조회", description = "전체 채팅방 목록을 조회합니다.")
-    public ResponseEntity<Map<String, Object>> getAllChatRooms() {
+    @Operation(summary = "내가 참여한 채팅방 조회", description = "현재 사용자가 참여한 채팅방 목록을 조회합니다.")
+    public ResponseEntity<Map<String, Object>> getAllChatRooms(
+            org.springframework.security.core.Authentication authentication) {
         Map<String, Object> response = new HashMap<>();
 
         try {
-            List<ChatRoomResponse> chatRooms = chatRoomService.getAllChatRooms();
+            Long userId = (Long) authentication.getPrincipal();
+            List<ChatRoomResponse> chatRooms = chatRoomService.getChatRoomsByUserId(userId);
 
             response.put("success", true);
             response.put("message", "채팅방 목록을 조회했습니다.");

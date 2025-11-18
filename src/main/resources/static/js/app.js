@@ -2,6 +2,9 @@
 const BASE_URL = 'http://localhost:7070';
 const API_KEY = 'your-secure-api-key-change-this-in-production';
 
+// 기본 프로필 이미지 (SVG data URI)
+const DEFAULT_PROFILE_IMAGE = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHJ4PSI0IiBmaWxsPSIjZTJlOGYwIi8+PHBhdGggZD0iTTIwIDIwYzIuNzYgMCA1LTIuMjQgNS01cy0yLjI0LTUtNS01LTUgMi4yNC01IDUgMi4yNCA1IDUgNXptMCAyYy0zLjMzIDAtMTAgMS42Ny0xMCA1djJoMjB2LTJjMC0zLjMzLTYuNjctNS0xMC01eiIgZmlsbD0iIzk0YTNiOCIvPjwvc3ZnPg==';
+
 // 전역 변수
 let currentUser = null;
 let currentChatRoom = null;
@@ -53,16 +56,16 @@ function showScreen(screenId) {
 }
 
 // ==================== 로그인/회원가입 ====================
-function showLoginForm() {
+function showLoginForm(e) {
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
+    if (e && e.target) e.target.classList.add('active');
     document.getElementById('loginForm').classList.add('active');
     document.getElementById('registerForm').classList.remove('active');
 }
 
-function showRegisterForm() {
+function showRegisterForm(e) {
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
+    if (e && e.target) e.target.classList.add('active');
     document.getElementById('registerForm').classList.add('active');
     document.getElementById('loginForm').classList.remove('active');
 }
@@ -160,7 +163,12 @@ function connectWebSocket() {
     const socket = new SockJS(`${BASE_URL}/ws`);
     stompClient = Stomp.over(socket);
 
-    stompClient.connect({}, function(frame) {
+    const token = getToken();
+    const headers = {
+        'Authorization': `Bearer ${token}`
+    };
+
+    stompClient.connect(headers, function(frame) {
         console.log('WebSocket Connected: ' + frame);
 
         // 전체 사용자 알림 구독 (선택사항)
@@ -196,7 +204,7 @@ function sendMessageViaWebSocket(chatroomId, content) {
             type: 'TEXT'
         };
 
-        stompClient.send(`/app/chat/${chatroomId}`, {}, JSON.stringify(message));
+        stompClient.send(`/app/chat/${chatroomId}/send`, {}, JSON.stringify(message));
     }
 }
 
@@ -267,7 +275,7 @@ function displayFriends(friends) {
 
     friendItems.innerHTML = friends.map(friend => `
         <div class="list-item">
-            <img src="${friend.profileImage || 'https://via.placeholder.com/40'}"
+            <img src="${friend.profileImage || DEFAULT_PROFILE_IMAGE}"
                  alt="${friend.username}"
                  class="profile-img">
             <div class="item-info">
@@ -360,7 +368,7 @@ function displayReceivedRequests(requests) {
 
     receivedItems.innerHTML = requests.map(request => `
         <div class="list-item">
-            <img src="${request.profileImage || 'https://via.placeholder.com/40'}"
+            <img src="${request.profileImage || DEFAULT_PROFILE_IMAGE}"
                  alt="${request.username}"
                  class="profile-img">
             <div class="item-info">
@@ -389,7 +397,7 @@ function displaySentRequests(requests) {
 
     sentItems.innerHTML = requests.map(request => `
         <div class="list-item">
-            <img src="${request.profileImage || 'https://via.placeholder.com/40'}"
+            <img src="${request.profileImage || DEFAULT_PROFILE_IMAGE}"
                  alt="${request.username}"
                  class="profile-img">
             <div class="item-info">
@@ -509,7 +517,7 @@ function displayChatRooms(chatRooms) {
 
     chatRoomItems.innerHTML = chatRooms.map(room => `
         <div class="list-item ${currentChatRoom && currentChatRoom.id === room.id ? 'active' : ''}"
-             onclick="selectChatRoom(${room.id})">
+             onclick="selectChatRoom(${room.id}, this)">
             <div class="item-info">
                 <div class="item-name">${room.chatroomName}</div>
                 <div class="item-detail">${room.participantCount}명</div>
@@ -518,7 +526,7 @@ function displayChatRooms(chatRooms) {
     `).join('');
 }
 
-async function selectChatRoom(chatroomId) {
+async function selectChatRoom(chatroomId, element) {
     try {
         const token = getToken();
         const response = await fetch(`${BASE_URL}/api/chatrooms/${chatroomId}`, {
@@ -541,7 +549,9 @@ async function selectChatRoom(chatroomId) {
             document.querySelectorAll('#chatRoomItems .list-item').forEach(item => {
                 item.classList.remove('active');
             });
-            event.target.closest('.list-item').classList.add('active');
+            if (element) {
+                element.classList.add('active');
+            }
 
             // 메시지 로드
             loadMessages(chatroomId);
@@ -640,7 +650,7 @@ function displayParticipants(participants) {
 
     participantsList.innerHTML = participants.map(p => `
         <div class="participant-item">
-            <img src="${p.profileImage || 'https://via.placeholder.com/40'}" alt="${p.username}">
+            <img src="${p.profileImage || DEFAULT_PROFILE_IMAGE}" alt="${p.username}">
             <div class="participant-info">
                 <div class="participant-name">${p.username}</div>
                 <div class="participant-email">${p.email}</div>
@@ -684,7 +694,7 @@ function displayMessage(message) {
     messageDiv.dataset.messageId = message.id;
 
     messageDiv.innerHTML = `
-        <img src="${message.senderProfileImage || 'https://via.placeholder.com/36'}"
+        <img src="${message.senderProfileImage || DEFAULT_PROFILE_IMAGE}"
              alt="${message.senderName}"
              class="message-avatar">
         <div class="message-content">
@@ -799,9 +809,9 @@ async function markAsRead(chatroomId) {
 }
 
 // ==================== UI 헬퍼 함수 ====================
-function showChatRooms() {
+function showChatRooms(e) {
     document.querySelectorAll('.sidebar-tabs .tab-btn').forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
+    if (e && e.target) e.target.classList.add('active');
 
     document.querySelectorAll('.sidebar-content').forEach(content => content.classList.remove('active'));
     document.getElementById('chatRoomList').classList.add('active');
@@ -809,9 +819,9 @@ function showChatRooms() {
     loadChatRooms();
 }
 
-function showFriends() {
+function showFriends(e) {
     document.querySelectorAll('.sidebar-tabs .tab-btn').forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
+    if (e && e.target) e.target.classList.add('active');
 
     document.querySelectorAll('.sidebar-content').forEach(content => content.classList.remove('active'));
     document.getElementById('friendList').classList.add('active');
@@ -819,9 +829,9 @@ function showFriends() {
     loadFriends();
 }
 
-function showFriendRequests() {
+function showFriendRequests(e) {
     document.querySelectorAll('.sidebar-tabs .tab-btn').forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
+    if (e && e.target) e.target.classList.add('active');
 
     document.querySelectorAll('.sidebar-content').forEach(content => content.classList.remove('active'));
     document.getElementById('friendRequestList').classList.add('active');
@@ -830,9 +840,9 @@ function showFriendRequests() {
     loadSentRequests();
 }
 
-function showReceivedRequests() {
+function showReceivedRequests(e) {
     document.querySelectorAll('.request-tab').forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
+    if (e && e.target) e.target.classList.add('active');
 
     document.getElementById('receivedRequestItems').classList.add('active');
     document.getElementById('sentRequestItems').classList.remove('active');
@@ -840,9 +850,9 @@ function showReceivedRequests() {
     loadReceivedRequests();
 }
 
-function showSentRequests() {
+function showSentRequests(e) {
     document.querySelectorAll('.request-tab').forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
+    if (e && e.target) e.target.classList.add('active');
 
     document.getElementById('receivedRequestItems').classList.remove('active');
     document.getElementById('sentRequestItems').classList.add('active');
