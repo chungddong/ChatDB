@@ -153,3 +153,6 @@ application-prod.properties
 
 # Ignore Maven wrapper jar (we want to keep it)
 !.mvn/wrapper/maven-wrapper.jar
+
+
+*.md

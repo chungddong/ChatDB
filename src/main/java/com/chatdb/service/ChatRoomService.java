@@ -86,8 +86,8 @@ public class ChatRoomService {
         }
 
         User user = userOptional.get();
-        // 사용자가 참여한 모든 참가자 레코드 조회
-        List<Participant> participants = participantRepository.findByUser(user);
+        // 사용자가 참여한 모든 참가자 레코드 조회 (Fetch Join 사용)
+        List<Participant> participants = participantRepository.findByUserWithChatRoom(user);
 
         // 참가자 레코드에서 채팅방 추출 및 변환
         return participants.stream()
