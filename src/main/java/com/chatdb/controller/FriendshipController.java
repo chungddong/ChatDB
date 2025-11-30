@@ -18,7 +18,8 @@ import java.util.Map;
 
 /**
  * 친구 관리 컨트롤러
- * 친구 요청, 수락, 거절, 친구 목록 조회 등의 API 제공
+ * 친구 추가 및 친구 목록 조회 등의 API 제공
+ * (즉시 친구 추가 방식으로 변경됨 - 승인 절차 없음)
  */
 @RestController
 @RequestMapping("/api/friends")
@@ -33,13 +34,13 @@ public class FriendshipController {
     }
 
     /**
-     * 친구 요청 보내기
+     * 친구 추가 (즉시 친구로 추가됨)
      * @param authentication 인증 정보 (JWT에서 자동으로 추출된 사용자 ID)
-     * @param requestDto 친구 요청 정보 (친구 사용자 이메일)
-     * @return 친구 요청 결과
+     * @param requestDto 친구 추가 정보 (친구 사용자 이메일)
+     * @return 친구 추가 결과
      */
     @PostMapping("/request")
-    @Operation(summary = "친구 요청 보내기", description = "특정 사용자의 이메일로 친구 요청을 보냅니다.")
+    @Operation(summary = "친구 추가", description = "특정 사용자의 이메일로 친구를 추가합니다. (즉시 친구로 추가됨)")
     public ResponseEntity<Map<String, Object>> sendFriendRequest(
             Authentication authentication,
             @RequestBody FriendRequestDto requestDto) {
@@ -50,8 +51,8 @@ public class FriendshipController {
             Friendship friendship = friendshipService.sendFriendRequest(userId, requestDto.getFriendEmail());
 
             response.put("success", true);
-            response.put("message", "친구 요청을 보냈습니다.");
-            response.put("requestId", friendship.getId());
+            response.put("message", "친구를 추가했습니다.");
+            response.put("friendshipId", friendship.getId());
 
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
@@ -62,16 +63,18 @@ public class FriendshipController {
 
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "친구 요청 중 오류가 발생했습니다: " + e.getMessage());
+            response.put("message", "친구 추가 중 오류가 발생했습니다: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
+    /* ===== 기존 친구 요청 승인 방식 API (비활성화) ===== */
+
     /**
-     * 받은 친구 요청 목록 조회
-     * @param authentication 인증 정보
-     * @return 받은 친구 요청 목록
+     * 받은 친구 요청 목록 조회 - DEPRECATED
+     * 즉시 친구 추가 방식으로 변경되어 더 이상 사용하지 않음
      */
+    /*
     @GetMapping("/requests/received")
     @Operation(summary = "받은 친구 요청 목록 조회", description = "내가 받은 친구 요청 목록을 조회합니다.")
     public ResponseEntity<Map<String, Object>> getReceivedFriendRequests(
@@ -100,12 +103,13 @@ public class FriendshipController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
+    */
 
     /**
-     * 보낸 친구 요청 목록 조회
-     * @param authentication 인증 정보
-     * @return 보낸 친구 요청 목록
+     * 보낸 친구 요청 목록 조회 - DEPRECATED
+     * 즉시 친구 추가 방식으로 변경되어 더 이상 사용하지 않음
      */
+    /*
     @GetMapping("/requests/sent")
     @Operation(summary = "보낸 친구 요청 목록 조회", description = "내가 보낸 친구 요청 목록을 조회합니다.")
     public ResponseEntity<Map<String, Object>> getSentFriendRequests(
@@ -134,13 +138,13 @@ public class FriendshipController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
+    */
 
     /**
-     * 친구 요청 수락
-     * @param requestId 친구 요청 ID
-     * @param authentication 인증 정보
-     * @return 수락 결과
+     * 친구 요청 수락 - DEPRECATED
+     * 즉시 친구 추가 방식으로 변경되어 더 이상 사용하지 않음
      */
+    /*
     @PostMapping("/requests/{requestId}/accept")
     @Operation(summary = "친구 요청 수락", description = "받은 친구 요청을 수락합니다.")
     public ResponseEntity<Map<String, Object>> acceptFriendRequest(
@@ -169,13 +173,13 @@ public class FriendshipController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
+    */
 
     /**
-     * 친구 요청 거절
-     * @param requestId 친구 요청 ID
-     * @param authentication 인증 정보
-     * @return 거절 결과
+     * 친구 요청 거절 - DEPRECATED
+     * 즉시 친구 추가 방식으로 변경되어 더 이상 사용하지 않음
      */
+    /*
     @PostMapping("/requests/{requestId}/reject")
     @Operation(summary = "친구 요청 거절", description = "받은 친구 요청을 거절합니다.")
     public ResponseEntity<Map<String, Object>> rejectFriendRequest(
@@ -203,6 +207,7 @@ public class FriendshipController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
+    */
 
     /**
      * 친구 목록 조회
@@ -239,11 +244,10 @@ public class FriendshipController {
     }
 
     /**
-     * 친구 요청 취소
-     * @param requestId 친구 요청 ID
-     * @param authentication 인증 정보
-     * @return 취소 결과
+     * 친구 요청 취소 - DEPRECATED
+     * 즉시 친구 추가 방식으로 변경되어 더 이상 사용하지 않음
      */
+    /*
     @DeleteMapping("/requests/{requestId}/cancel")
     @Operation(summary = "친구 요청 취소", description = "보낸 친구 요청을 취소합니다.")
     public ResponseEntity<Map<String, Object>> cancelFriendRequest(
@@ -271,6 +275,7 @@ public class FriendshipController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
+    */
 
     /**
      * 친구 삭제

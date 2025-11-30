@@ -28,9 +28,9 @@ public class FriendshipService {
     }
 
     /**
-     * 친구 요청 보내기 (이메일로)
+     * 친구 추가 (이메일로) - 즉시 친구로 추가됨
      * @param userId 요청을 보내는 사용자 ID
-     * @param friendEmail 요청을 받을 사용자 이메일
+     * @param friendEmail 친구로 추가할 사용자 이메일
      * @return 생성된 친구 관계
      */
     @Transactional
@@ -45,24 +45,52 @@ public class FriendshipService {
 
         // 자기 자신에게 요청하는 경우
         if (userId.equals(friendUser.getId())) {
-            throw new IllegalArgumentException("자기 자신에게 친구 요청을 보낼 수 없습니다.");
+            throw new IllegalArgumentException("자기 자신을 친구로 추가할 수 없습니다.");
         }
 
         // 이미 친구 관계가 존재하는지 확인 (양방향)
         if (friendshipRepository.existsFriendship(userId, friendUser.getId())) {
-            throw new IllegalArgumentException("이미 친구 요청이 존재하거나 친구 관계입니다.");
+            throw new IllegalArgumentException("이미 친구 관계입니다.");
         }
 
-        // 친구 요청 생성
-        Friendship friendship = new Friendship(user, friendUser, FriendshipStatus.PENDING);
+        // 친구 관계 생성 - 바로 ACCEPTED 상태로 생성
+        Friendship friendship = new Friendship(user, friendUser, FriendshipStatus.ACCEPTED);
         return friendshipRepository.save(friendship);
     }
 
+    /* ===== 기존 친구 요청 승인 방식 (비활성화) ===== */
+
     /**
-     * 받은 친구 요청 목록 조회
-     * @param userId 사용자 ID
-     * @return 받은 친구 요청 목록
+     * 친구 요청 보내기 (이메일로) - DEPRECATED
+     * 더 이상 사용하지 않음. sendFriendRequest가 즉시 친구 추가 방식으로 변경됨
      */
+    /*
+    @Transactional
+    public Friendship sendFriendRequestOld(Long userId, String friendEmail) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        User friendUser = userRepository.findByEmail(friendEmail)
+                .orElseThrow(() -> new IllegalArgumentException("해당 이메일의 사용자를 찾을 수 없습니다."));
+
+        if (userId.equals(friendUser.getId())) {
+            throw new IllegalArgumentException("자기 자신에게 친구 요청을 보낼 수 없습니다.");
+        }
+
+        if (friendshipRepository.existsFriendship(userId, friendUser.getId())) {
+            throw new IllegalArgumentException("이미 친구 요청이 존재하거나 친구 관계입니다.");
+        }
+
+        Friendship friendship = new Friendship(user, friendUser, FriendshipStatus.PENDING);
+        return friendshipRepository.save(friendship);
+    }
+    */
+
+    /**
+     * 받은 친구 요청 목록 조회 - DEPRECATED
+     * 즉시 친구 추가 방식으로 변경되어 더 이상 사용하지 않음
+     */
+    /*
     @Transactional(readOnly = true)
     public List<FriendshipResponseDto> getReceivedFriendRequests(Long userId) {
         User user = userRepository.findById(userId)
@@ -73,12 +101,13 @@ public class FriendshipService {
                 .map(FriendshipResponseDto::fromReceivedRequest)
                 .collect(Collectors.toList());
     }
+    */
 
     /**
-     * 보낸 친구 요청 목록 조회
-     * @param userId 사용자 ID
-     * @return 보낸 친구 요청 목록
+     * 보낸 친구 요청 목록 조회 - DEPRECATED
+     * 즉시 친구 추가 방식으로 변경되어 더 이상 사용하지 않음
      */
+    /*
     @Transactional(readOnly = true)
     public List<FriendshipResponseDto> getSentFriendRequests(Long userId) {
         User user = userRepository.findById(userId)
@@ -89,58 +118,53 @@ public class FriendshipService {
                 .map(FriendshipResponseDto::fromSentRequest)
                 .collect(Collectors.toList());
     }
+    */
 
     /**
-     * 친구 요청 수락
-     * @param requestId 친구 요청 ID
-     * @param userId 요청을 받은 사용자 ID
-     * @return 수락된 친구 관계
+     * 친구 요청 수락 - DEPRECATED
+     * 즉시 친구 추가 방식으로 변경되어 더 이상 사용하지 않음
      */
+    /*
     @Transactional
     public Friendship acceptFriendRequest(Long requestId, Long userId) {
         Friendship friendship = friendshipRepository.findById(requestId)
                 .orElseThrow(() -> new IllegalArgumentException("친구 요청을 찾을 수 없습니다."));
 
-        // 요청을 받은 사용자가 맞는지 확인
         if (!friendship.getFriendUser().getId().equals(userId)) {
             throw new IllegalArgumentException("본인에게 온 친구 요청만 수락할 수 있습니다.");
         }
 
-        // 이미 처리된 요청인지 확인
         if (!friendship.isPending()) {
             throw new IllegalArgumentException("이미 처리된 친구 요청입니다.");
         }
 
-        // 친구 요청 수락
         friendship.accept();
         return friendshipRepository.save(friendship);
     }
+    */
 
     /**
-     * 친구 요청 거절
-     * @param requestId 친구 요청 ID
-     * @param userId 요청을 받은 사용자 ID
-     * @return 거절된 친구 관계
+     * 친구 요청 거절 - DEPRECATED
+     * 즉시 친구 추가 방식으로 변경되어 더 이상 사용하지 않음
      */
+    /*
     @Transactional
     public Friendship rejectFriendRequest(Long requestId, Long userId) {
         Friendship friendship = friendshipRepository.findById(requestId)
                 .orElseThrow(() -> new IllegalArgumentException("친구 요청을 찾을 수 없습니다."));
 
-        // 요청을 받은 사용자가 맞는지 확인
         if (!friendship.getFriendUser().getId().equals(userId)) {
             throw new IllegalArgumentException("본인에게 온 친구 요청만 거절할 수 있습니다.");
         }
 
-        // 이미 처리된 요청인지 확인
         if (!friendship.isPending()) {
             throw new IllegalArgumentException("이미 처리된 친구 요청입니다.");
         }
 
-        // 친구 요청 거절
         friendship.reject();
         return friendshipRepository.save(friendship);
     }
+    */
 
     /**
      * 친구 목록 조회
@@ -161,27 +185,26 @@ public class FriendshipService {
     }
 
     /**
-     * 친구 요청 취소 (보낸 요청 취소)
-     * @param requestId 친구 요청 ID
-     * @param userId 요청을 보낸 사용자 ID
+     * 친구 요청 취소 (보낸 요청 취소) - DEPRECATED
+     * 즉시 친구 추가 방식으로 변경되어 더 이상 사용하지 않음
      */
+    /*
     @Transactional
     public void cancelFriendRequest(Long requestId, Long userId) {
         Friendship friendship = friendshipRepository.findById(requestId)
                 .orElseThrow(() -> new IllegalArgumentException("친구 요청을 찾을 수 없습니다."));
 
-        // 요청을 보낸 사용자가 맞는지 확인
         if (!friendship.getUser().getId().equals(userId)) {
             throw new IllegalArgumentException("본인이 보낸 친구 요청만 취소할 수 있습니다.");
         }
 
-        // 대기중인 요청만 취소 가능
         if (!friendship.isPending()) {
             throw new IllegalArgumentException("대기중인 친구 요청만 취소할 수 있습니다.");
         }
 
         friendshipRepository.delete(friendship);
     }
+    */
 
     /**
      * 친구 삭제
