@@ -36,17 +36,31 @@ public class ChatRoomService {
 
     /**
      * 채팅방 생성
+     * @param request 채팅방 생성 요청 (채팅방 이름, 참가자 목록)
+     * @param creatorId 채팅방 생성자 ID (자동으로 참가자에 포함됨)
      */
     @Transactional
-    public ChatRoomResponse createChatRoom(CreateChatRoomRequest request) {
+    public ChatRoomResponse createChatRoom(CreateChatRoomRequest request, Long creatorId) {
         // 1. 채팅방 생성
         ChatRoom chatRoom = new ChatRoom(request.getChatroomName());
         ChatRoom savedChatRoom = chatRoomRepository.save(chatRoom);
 
-        // 2. 참가자 추가
+        // 2. 생성자를 참가자로 추가 (먼저 추가)
+        Optional<User> creatorOptional = userRepository.findById(creatorId);
+        if (creatorOptional.isPresent()) {
+            Participant creatorParticipant = new Participant(savedChatRoom, creatorOptional.get());
+            participantRepository.save(creatorParticipant);
+        }
+
+        // 3. 나머지 참가자 추가 (생성자 중복 방지)
         List<Long> participantIds = request.getParticipantIds();
         if (participantIds != null && !participantIds.isEmpty()) {
             for (Long userId : participantIds) {
+                // 생성자는 이미 추가했으므로 스킵
+                if (userId.equals(creatorId)) {
+                    continue;
+                }
+
                 Optional<User> userOptional = userRepository.findById(userId);
                 if (userOptional.isPresent()) {
                     Participant participant = new Participant(savedChatRoom, userOptional.get());
@@ -55,7 +69,7 @@ public class ChatRoomService {
             }
         }
 
-        // 3. 참가자 수 조회
+        // 4. 참가자 수 조회
         Integer participantCount = participantRepository.countByChatRoom(savedChatRoom);
 
         return ChatRoomResponse.from(savedChatRoom, participantCount);

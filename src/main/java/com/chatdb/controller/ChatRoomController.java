@@ -35,11 +35,14 @@ public class ChatRoomController {
     /**
      * 채팅방 생성
      * @param request 채팅방 이름 및 참가자 목록
+     * @param authentication 인증 정보 (생성자 ID 추출)
      * @return 생성된 채팅방 정보
      */
     @PostMapping
-    @Operation(summary = "채팅방 생성", description = "새로운 채팅방을 생성하고 참가자를 추가합니다.")
-    public ResponseEntity<Map<String, Object>> createChatRoom(@RequestBody CreateChatRoomRequest request) {
+    @Operation(summary = "채팅방 생성", description = "새로운 채팅방을 생성하고 참가자를 추가합니다. 생성자는 자동으로 참가자에 포함됩니다.")
+    public ResponseEntity<Map<String, Object>> createChatRoom(
+            @RequestBody CreateChatRoomRequest request,
+            org.springframework.security.core.Authentication authentication) {
         Map<String, Object> response = new HashMap<>();
 
         try {
@@ -56,8 +59,11 @@ public class ChatRoomController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
             }
 
-            // 채팅방 생성
-            ChatRoomResponse chatRoom = chatRoomService.createChatRoom(request);
+            // 생성자 ID 추출 (JWT 토큰에서)
+            Long creatorId = (Long) authentication.getPrincipal();
+
+            // 채팅방 생성 (생성자 ID 포함)
+            ChatRoomResponse chatRoom = chatRoomService.createChatRoom(request, creatorId);
 
             response.put("success", true);
             response.put("message", "채팅방이 생성되었습니다.");
